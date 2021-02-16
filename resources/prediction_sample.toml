@@ -1,0 +1,15 @@
+# This is a prediction configuration for predicting using a Naive Bayes classifier for MeMAD.
+# I had more stuff in this file, but I've removed most. You can change the main prediction
+# script "lid_prediction_pipeline" so that it takes the paths directly if you like.
+
+title = "Naive Bayes predicting configuration"
+
+# Various paths needed in the scripts
+[paths]
+embedding_model = "memad_lid_models/embedding_model.hdf5" # I had a symbolic link to the actual file elsewhere in the system
+modeldir = "memad_lid_models"
+cachedir = "./CACHE"
+
+[experiment]
+splits = ["predict"]
+langs = ["en", "fi", "de", "fr", "sv", "x-nolang"]

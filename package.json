@@ -1,0 +1,24 @@
+{
+  "name": "limecraft-lid-scripts",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "config": "^3.3.1",
+    "debug": "^4.1.1",
+    "exit": "^0.1.2",
+    "fs-extra": "^9.0.1",
+    "json5": "^2.1.3",
+    "lodash": "^4.17.15",
+    "moment": "^2.27.0",
+    "nopt": "^4.0.3",
+    "nopt-usage": "^0.1.0",
+    "numeral": "^2.0.6",
+    "request-promise": "^4.2.5",
+    "request-promise-native": "^1.0.7"
+  },
+  "devDependencies": {}
+}
