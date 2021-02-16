@@ -3,7 +3,7 @@ const fs = require('fs');
 const config = require('config');
 const { promisify } = require('util');
 const Promise = require("bluebird");
-const request = require('request-promise-native');
+//const request = require('request-promise-native');
 const path = require('path');
 const _ = require('lodash');
 const numeral = require('numeral');
@@ -16,7 +16,7 @@ const main = async () => {
     
     const myArgs = process.argv.slice(2);
     
-    const langOut = myArgs[3];
+    const outSegments = myArgs[3];
     
     // read segments
     const segments = JSON.parse(await readFile(myArgs[0])).results;
@@ -59,35 +59,51 @@ const main = async () => {
     
     //console.log(JSON.stringify(groupedSegments['en'], '', 4));
     
+    // trim WAV segments per language
     
-    // trim using SoX
-    const soxArgs = [
-        myArgs[2],
-        '-c',  '1',
-        `${myArgs[2]}-${langOut}.wav`,
-        'trim'
-    ].concat( _.flatten(_.map( groupedSegments[langOut], seg => [`=${seg.start/seg.samplerate_num}`, `=${seg.end/seg.samplerate_num}`] ) ) );
+    const extGroupedSegments = {};
     
-    console.log(soxArgs);
-    
-    const { stdout, stderr } = await execFile('sox', soxArgs);
-    
-    console.log(stdout);
-    
-    const ffmpegArgs = [
-        '-i',
-        `${myArgs[2]}-${langOut}.wav`,
-        `${myArgs[2]}-${langOut}.mp3`
-    ]
+    await Promise.map( _.keys(groupedSegments), async (langOut) => {
+       
+        const v = groupedSegments[langOut];
+       
+        const outWAV = `${myArgs[2]}-${langOut}.wav`;
+        // trim using SoX
+        const soxArgs = [
+            myArgs[2],
+            '-c',  '1',
+            outWAV,
+            'trim'
+        ].concat( _.flatten(_.map( v, seg => [`=${seg.start/seg.samplerate_num}`, `=${seg.end/seg.samplerate_num}`] ) ) );
+        
+        console.log(soxArgs);
+        
+        const { stdout, stderr } = await execFile('sox', soxArgs);
+        
+        console.log(stdout);
+        
+        const ffmpegArgs = [
+            '-y',
+            '-i',
+            `${myArgs[2]}-${langOut}.wav`,
+            `${myArgs[2]}-${langOut}.mp3`
+        ]
 
-    const { stdout1, stderr1 } = await execFile('ffmpeg', ffmpegArgs);
-    
-    console.log(stdout1);
-
+        const { stdout: stdout1, stderr: stderr1 } = await execFile('ffmpeg', ffmpegArgs);
+        
+        console.log(stdout1);    
+       
+        extGroupedSegments[langOut] = {
+            segments: v,
+            wav: path.resolve(outWAV) // resolve to an absolute path to enable easier pass-on to other apps.
+        };
+        
+    }, {concurrency: 1});
     
    // consolidate
+   //await writeFile()
    
-   //await writeFile('classified_segments.json', JSON.stringify(groupedSegments, '', 4));
+   await writeFile(outSegments, JSON.stringify(extGroupedSegments, '', 2));
   
    
 }
