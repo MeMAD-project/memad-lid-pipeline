@@ -12,17 +12,13 @@ const execFile = promisify(require('child_process').execFile);
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 
-const main = async () => {
-    
-    const myArgs = process.argv.slice(2);
-    
-    const outSegments = myArgs[3];
-    
-    // read segments
-    const segments = JSON.parse(await readFile(myArgs[0])).results;
+async function processSegments(inSegments, classifications, sourceWav, outSegments) {
+           
+    // read segments if applicable
+    const segments = (_.isString(inSegments)) ? JSON.parse(await readFile(inSegments)) : inSegments; // .results;
 
     // read results
-    const langClass = JSON.parse(await readFile(myArgs[1] /*"MEDIA_2019_01602888/predict/utt2lang.json"*/));
+    const langClass = JSON.parse(await readFile(classifications));
 
     // turn lookup each result and add it to the segment into a dictionary
     let lastLang = null;
@@ -67,10 +63,10 @@ const main = async () => {
        
         const v = groupedSegments[langOut];
        
-        const outWAV = `${myArgs[2]}-${langOut}.wav`;
+        const outWAV = `${sourceWav}-${langOut}.wav`;
         // trim using SoX
         const soxArgs = [
-            myArgs[2],
+            sourceWav,
             '-c',  '1',
             outWAV,
             'trim'
@@ -85,8 +81,8 @@ const main = async () => {
         const ffmpegArgs = [
             '-y',
             '-i',
-            `${myArgs[2]}-${langOut}.wav`,
-            `${myArgs[2]}-${langOut}.mp3`
+            `${outWAV}`,
+            `${sourceWav}-${langOut}.mp3`
         ]
 
         const { stdout: stdout1, stderr: stderr1 } = await execFile('ffmpeg', ffmpegArgs);
@@ -103,10 +99,24 @@ const main = async () => {
    // consolidate
    //await writeFile()
    
-   await writeFile(outSegments, JSON.stringify(extGroupedSegments, '', 2));
-  
+   if (outSegments) {
+       await writeFile(outSegments, JSON.stringify(extGroupedSegments, '', 2));
+   }
+   else {
+       // if not writing to file, return the object
+       return extGroupedSegments;
+   }
    
 }
 
-main();
+if (require.main === module) {
+    
+    const myArgs = process.argv.slice(2);
+    
+    // pass along other argument;
+    
+    main(myArgs[0],myArgs[1],myArgs[2],myArgs[3]);
+    
+}
 
+module.exports = processSegments;
