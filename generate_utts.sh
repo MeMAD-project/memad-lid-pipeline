@@ -16,10 +16,10 @@ fi
 
 SRCDIR="$1"
 
-echo "Creating utt2path and utt2label from '$SRCDIR'."
+echo "Creating utt2path and utt2label from '$SRCDIR' IN $PWD."
 if [ ! -f utt2label ] && [ ! -f utt2path ]; then
 	echo "Writing new utt2label and utt2path files."
-	for i in $(find "$PWD/$SRCDIR" -type f)
+	for i in $(find $(realpath "$SRCDIR") -type f)
 	do
 		FNAME=$(basename $i)
 		echo "${FNAME%.*} ${i}" >> utt2path
