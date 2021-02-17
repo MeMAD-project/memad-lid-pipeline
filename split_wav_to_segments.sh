@@ -36,7 +36,7 @@ mkdir -p $OUTDIR
 set -o xtrace 
 #jq -r  '.[][] | [ .[0], .[1], .[2]|tostring] | join(" ")' $JSON | while read i
 #jq -r  '.[] | [ .id, .start, .end|tostring] | join(" ")' $JSON | while read i
-jq -r '.results[]| [ .id, (.start / .samplerate_num), (.end/.samplerate_num)|tostring ] | join(" ")' $JSON | while read i
+jq -r '.[]| [ .id, (.start / .samplerate_num), (.end/.samplerate_num)|tostring ] | join(" ")' $JSON | while read i
 do
 	read -a arg <<< "$i"
 	START=$(perl -e "printf '%08d',  ${arg[1]}*1000") # Pad with zeroes for sorting
