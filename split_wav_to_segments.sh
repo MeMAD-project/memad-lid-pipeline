@@ -39,8 +39,8 @@ set -o xtrace
 jq -r '.[]| [ .id, (.start / .samplerate_num), (.end/.samplerate_num)|tostring ] | join(" ")' $JSON | while read i
 do
 	read -a arg <<< "$i"
-	START=$(perl -e "printf '%08d',  ${arg[1]}*1000") # Pad with zeroes for sorting
-	END=$(perl -e "printf '%08d',  ${arg[2]}*1000")
+	START=$(perl -e "use POSIX(); printf '%08d', POSIX::round(${arg[1]}*1000)") # Pad with zeroes for sorting
+	END=$(perl -e "use POSIX(); printf '%08d', POSIX::round(${arg[2]}*1000)")
 	sox $WAV -c 1 "${OUTDIR}/split_${START}_${END}_${arg[0]}.wav" trim "${arg[1]}" "=${arg[2]}"
 done # < $SEGMENT_TMP
 
